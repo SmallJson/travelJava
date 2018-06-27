@@ -21,7 +21,9 @@ public interface TravelDayMapper {
         @Result(property = "placeBean",column = "id",
                     one = @One(select = "com.bupt.travel.mapper.PlaceMapper.selectPlace")),
         @Result(property = "houseBean",column = "id",
-                    one = @One(select = "com.bupt.travel.mapper.HouseMapper.selectHouse"))
+                    one = @One(select = "com.bupt.travel.mapper.HouseMapper.selectHouse")),
+        @Result(property = "noteBean", column = "id",
+                    one = @One(select = "com.bupt.travel.mapper.NoteMapper.selectNode"))
     })
     public TravelDayBean selectTravelDay(TravelDay travelDay);
 }

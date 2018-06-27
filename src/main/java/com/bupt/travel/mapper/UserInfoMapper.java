@@ -14,4 +14,8 @@ public interface UserInfoMapper {
             @Result(property = "uid",column = "id")
     })
     public UserInfo selectUserInfoByUid(Integer uid);
+
+    @Update("update  user_info  set avator  = #{avator} where id =#{uid}")
+    public int updateInfo(UserInfo info);
+
 }

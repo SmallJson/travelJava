@@ -40,15 +40,15 @@ public class TravelControll {
         if(result == false){
             return ResponseUtil.error(null,"分享失败");
         }
-
-    /*    //发送一条消息给分享对象
-        //1.通过id查询分享人姓名
-        UserInfo userInfo = userService.selectUserInfoByUid(travelTotalBean.fromUid);
-        //3.拼接分享消息
-        String msg = userInfo.getName()+"指定了一条新行程";
-        imService.sendTextMessage(userInfo.getName(), travelTotalBean.getPhone(), msg);
-        System.out.println("已经分享一条消息");*/
         return ResponseUtil.success("分享成功");
+    }
+
+    //通过travelId查找旅游信息
+    @RequestMapping(value = "selectTravelByid",method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> selectTravelById(@RequestParam(required =true) Integer travelId){
+        TravelTotalBean travelTotalBean = travelService.selectTravelById(travelId);
+        return  ResponseUtil.success(travelTotalBean);
     }
 
     @RequestMapping(value = "selectTravel",method = RequestMethod.POST)
@@ -66,6 +66,7 @@ public class TravelControll {
         return ResponseUtil.success(list);
     }
 
+
     @RequestMapping(value = "updateTravel",method = RequestMethod.POST)
     @ResponseBody
     public Map<String, Object> updateTravel(@RequestBody TravelTotalBean travelTotalBean){
@@ -82,4 +83,16 @@ public class TravelControll {
         return ResponseUtil.success(null,"更新成功");
     }
 
+    @RequestMapping(value ="updateTravelComplete", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> updateTravelDetailDay(@RequestParam(required = true) Integer id
+                                                    ,@RequestParam(required = true) Integer type){
+
+        int result = travelService.updataComplete(id,type);
+        if(result < 1){
+            return ResponseUtil.error(null,"更新旅行细节状态错误");
+        }else{
+            return ResponseUtil.success(null,"更新旅行细节状态成功");
+        }
+    }
 }

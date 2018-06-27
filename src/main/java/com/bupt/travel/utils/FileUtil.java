@@ -26,7 +26,8 @@ public class FileUtil {
             // 判断文件类型
             type=fileName.indexOf(".")!=-1?fileName.substring(fileName.lastIndexOf(".")+1, fileName.length()):null;
             if (type!=null) {// 判断文件类型是否为空
-                if ("GIF".equals(type.toUpperCase())||"PNG".equals(type.toUpperCase())||"JPG".equals(type.toUpperCase())) {
+                if ("GIF".equals(type.toUpperCase())||"PNG".equals(type.toUpperCase())||"JPG".equals(type.toUpperCase())
+                        || "BMP".equals(type.toUpperCase()) || "JPEG".equals(type.toUpperCase())) {
                     // 项目在容器中实际发布运行的根路径
                     String realPath=request.getSession().getServletContext().getRealPath("/imgs");
                     File file1 = new File(realPath);

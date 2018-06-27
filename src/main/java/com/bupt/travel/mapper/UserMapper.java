@@ -5,6 +5,8 @@ import com.bupt.travel.model.reponseBean.RelationInfo;
 import org.apache.ibatis.annotations.*;
 import org.mybatis.spring.annotation.MapperScan;
 
+import javax.websocket.server.ServerEndpoint;
+
 @Mapper
 public interface UserMapper {
 
@@ -30,4 +32,9 @@ public interface UserMapper {
             " where u.uid =#{uid}" )
     public RelationInfo selectUserInfoByUid(Integer uid);
 
+    /**
+     * 通过uid查询手机号码
+     */
+    @Select("select account from user where uid = #{uid}")
+    public String selectPhoneByUid(@Param("uid") Integer uid);
 }

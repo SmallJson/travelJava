@@ -5,6 +5,15 @@ public class MessageBean {
     public String dest;
     public Integer type;
     public String text;
+    public Integer placeId;
+
+    public Integer getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(Integer placeId) {
+        this.placeId = placeId;
+    }
 
     public Integer getFromUid() {
         return fromUid;

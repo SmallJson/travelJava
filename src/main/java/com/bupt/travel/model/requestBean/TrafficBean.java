@@ -17,6 +17,35 @@ public class TrafficBean {
     //目的地点
     public String endPlace;
 
+    Integer id;
+    Integer complete;
+
+    public String img;
+
+    public String getImg() {
+        return img;
+    }
+
+    public void setImg(String img) {
+        this.img = img;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getComplete() {
+        return complete;
+    }
+
+    public void setComplete(Integer complete) {
+        this.complete = complete;
+    }
+
     public String getFlightName() {
         return flightName;
     }

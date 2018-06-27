@@ -111,9 +111,9 @@ public class RestTemplateUtil {
         try {
             return restTemplate.postForEntity(url, httpEntity, String.class).getBody();
         } catch (Exception e) {
-            logger.error("REST_REQUEST_ERROR " + url + " POST param=" + (param != null ? param.toString() : "{}") + " header=" + (header != null ? header.toString() : "{}") + " " + e.getMessage(),e);
+            logger.error("REST_REQUEST_ERROR " + url + " POST param=" + (param != null ? JacksonUtil.writeValueAsString(param): "{}") + " header=" + (header != null ? header.toString() : "{}") + " " + e.getMessage(),e);
+            throw  e;
         }
-        return "";
     }
 
     //Post请求需要带有token信息
@@ -144,6 +144,7 @@ public class RestTemplateUtil {
                     IMContants.HUAN_XING_TOKEN = token;
                     System.out.println("token="+IMContants.HUAN_XING_TOKEN);
                 }else{
+                    logger.error("REST_REQUEST_ERROR " + url + " POST param=" + (param != null ? param.toString() : "{}") + " header=" + (header != null ? header.toString() : "{}") + " " + e.getMessage(),e);
                     throw  e;
                 }
             }

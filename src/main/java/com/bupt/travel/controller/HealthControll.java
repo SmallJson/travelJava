@@ -10,7 +10,7 @@ import java.util.Map;
 @Controller
 public class HealthControll {
 
-    @RequestMapping("/health")
+    @RequestMapping("health")
     @ResponseBody
     public Map<String, Object> Health(){
         return ResponseUtil.success("health");

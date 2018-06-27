@@ -1,6 +1,7 @@
 package com.bupt.travel.mapper;
 
 import org.apache.ibatis.jdbc.SQL;
+import org.springframework.core.annotation.Order;
 
 import java.util.Map;
 
@@ -26,6 +27,7 @@ public class TravelSqlProvider {
                 if(readType !=null){
                     WHERE("read_type="+readType);
                 }
+                ORDER_BY("creat_time DESC ");
             }
         }.toString();
     }

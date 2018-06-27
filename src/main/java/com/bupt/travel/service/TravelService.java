@@ -1,5 +1,8 @@
 package com.bupt.travel.service;
 
+import com.bupt.travel.contant.IMContants;
+import com.bupt.travel.contant.ModelContants;
+import com.bupt.travel.dao.MessageDao;
 import com.bupt.travel.dao.TravelDao;
 import com.bupt.travel.mapper.UserInfoMapper;
 import com.bupt.travel.mapper.UserMapper;
@@ -9,6 +12,7 @@ import com.bupt.travel.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sun.misc.resources.Messages_de;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +28,20 @@ public class TravelService extends BaseService{
     UserInfoMapper infoMapper;
     @Autowired
     ImService imService;
+
+    @Autowired
+    MessageDao messageDao;
+
     @Transactional
     public boolean insertTravel(TravelTotalBean travelTotalBean){
+        //发送一条消息给分享对象
+        //1.通过id查询分享人姓名
+        UserInfo userInfo =infoMapper .selectUserInfoByUid(travelTotalBean.fromUid);
+        //2.拼接分享消息
+        String msg = userInfo.getName()+"指定了一条新行程";
+
+        //存储行程消息
+        List<Message> messageList = new ArrayList<>();
 
         //分离手机号码
         String [] phones = travelTotalBean.getPhone().split(",");
@@ -45,8 +61,14 @@ public class TravelService extends BaseService{
             return false;
         }
 
+        Integer xingchengId =0;
         //将信息插入到所有的目标对象中
-        for(Integer toId : uidList){
+        for(int i = 0 ;i < uidList.size(); i++){
+            Integer toId = uidList.get(i);
+            Message message = new Message();
+            message.setFromUid(travelTotalBean.getFromUid());
+            message.setToUid(toId);
+
             //1.插入TravelTotal对象，并且获取TravelTotal对象的id属性
             TravelTotal travelTotal = new TravelTotal();
             travelTotal.setStartPlace(travelTotalBean.getTravelBean().city);
@@ -58,6 +80,10 @@ public class TravelService extends BaseService{
             travelTotal.setReadType(1);
 
             travelTotal.setCreatTime(System.currentTimeMillis()+"");
+            message.setCreatTime(System.currentTimeMillis()+"");
+            message.setType(IMContants.TRAVEL_MSG);
+            message.setText(msg);
+
             travelTotal.setFromUid(travelTotalBean.getFromUid());
             travelTotal.setToUid(toId);
             travelDao.insertTravel(travelTotal);
@@ -67,18 +93,21 @@ public class TravelService extends BaseService{
             if(travelTotalBean.getTravelDayMap() == null) {
                 return  false;
             }
+            xingchengId = travelTotal.getId();
+            message.setTravelId(xingchengId);
+            message.setFromAvator(userInfo.getAvator());
+            message.setFromName(userInfo.getName());
+            message.setReadType(IMContants.IM_UNREAD);
 
-            Integer xingchengId = travelTotal.getId();
             updataTravelDay(travelTotalBean,xingchengId);
+
+            messageDao.insertMesssage(message);
+            //发送IM消息
+           /* boolean result = imService.sentTravelMessage(travelTotalBean.fromUid,userInfo.getAvator(),userInfo.getName(), travelTotalBean.getPhone(), msg, xingchengId);*/
+            boolean result = imService.sendTravelMessage(userInfo.getName(), phones, message);
+             System.out.println("发送一条行程信息");
         }
 
-        //发送一条消息给分享对象
-        //1.通过id查询分享人姓名
-        UserInfo userInfo =infoMapper .selectUserInfoByUid(travelTotalBean.fromUid);
-        //3.拼接分享消息
-        String msg = userInfo.getName()+"指定了一条新行程";
-        imService.sendTextMessage(userInfo.getName(), travelTotalBean.getPhone(), msg);
-        System.out.println("已经分享一条消息");
         return  true;
     }
 
@@ -121,26 +150,35 @@ public class TravelService extends BaseService{
 
             Traffic traffic = new Traffic();
             traffic.setId(travelDayId);
+            traffic.setComplete(ModelContants.UNCOMPLETE);
 
             Place place = new Place();
             place.setId(travelDayId);
+            place.setComplete(ModelContants.UNCOMPLETE);
 
             House house = new House();
             house.setId(travelDayId);
+            house.setComplete(ModelContants.UNCOMPLETE);
 
             Res res = new Res();
             res.setId(travelDayId);
+            res.setComplete(ModelContants.UNCOMPLETE);
+
+            Note note = new Note();
+            note.setId(travelDayId);
 
             if(dayBean != null){
                 traffic = filterTraffic(dayBean.getTrafficBean(), traffic);
                 res = filterRes(dayBean.getResBean(), res);
                 house =filterHouse(dayBean.getHouseBean(), house);
                 place = filterPlace(dayBean.getPlaceBean(), place);
+                note = filterNote(dayBean.getNoteBean(),note);
             }
             travelDao.insertTraffic(traffic);
             travelDao.insertPlace(place);
             travelDao.insertHouse(house);
             travelDao.insertRes(res);
+            travelDao.insertNote(note);
         }
     }
 
@@ -183,27 +221,68 @@ public class TravelService extends BaseService{
         return resultList;
     }
 
+    public TravelTotalBean selectTravelById(Integer travelId){
+        //查询行程总体信息
+        TravelTotal travelTotal = travelDao.selectTraveTotalById(travelId);
+
+        //0.获取分享人的id
+        Integer fromUid = travelTotal.getFromUid();
+        //利用分享人id查询分享人信息
+        UserInfo userInfo = infoMapper.selectUserInfoByUid(fromUid);
+        //获取分享人手机号码
+        String sharePhone= userMapper.selectPhoneByUid(fromUid);
+
+        //1.赋值
+        TravelTotalBean travelTotalBean = new TravelTotalBean();
+        //赋值分享人信息
+        travelTotalBean.setFromAvator(userInfo.getAvator());
+        travelTotalBean.setFromName(userInfo.getName());
+        travelTotalBean.setSharePhone(sharePhone);
+        //赋值行程id
+        travelTotalBean.setXingchengId(travelTotal.getId());
+
+        //1.赋值行程的总体信息
+        travelTotalBean.getTravelBean().dataCount = travelTotal.travelDay;
+        travelTotalBean.getTravelBean().time = travelTotal.startTime;
+        travelTotalBean.getTravelBean().travelName = travelTotal.travelName;
+        travelTotalBean.getTravelBean().city = travelTotal.startPlace;
+        travelTotalBean.getTravelBean().creatTime = TimeUtil.UnixToDate(travelTotal.creatTime);
+        //查询每一天的行程信息
+        for(int j = 1; j <= travelTotal.getTravelDay();j++){
+            TravelDay travelDay = new TravelDay();
+            travelDay.setDay(j);
+            travelDay.setXingchengId(travelTotal.getId());
+            TravelDayBean travelDayBean = travelDao.selectTravelDay(travelDay);
+            travelTotalBean.getTravelDayMap().put(j+"",travelDayBean);
+        }
+        return travelTotalBean;
+    }
+
     private Traffic filterTraffic(TrafficBean trafficBean, Traffic traffic){
         if(null != trafficBean){
             traffic.setFlight(trafficBean.getFlightName());
             traffic.setEndPlace(trafficBean.getEndPlace());
             traffic.setStartPlace(trafficBean.getStartPlace());
             traffic.setStartTime(trafficBean.getStartTime());
+            traffic.setImg(trafficBean.getImg());
         }
         return traffic;
     }
+
     private Place filterPlace(PlaceBean placeBean, Place place){
         if(null != placeBean){
             place.setPlayTime(placeBean.getPlaceName());
             place.setPlaceName(placeBean.getPlayTime());
+            place.setImg(placeBean.getImg());
         }
         return place;
     }
 
     private  House filterHouse(HouseBean houseBean, House house){
-        if(null != null){
+        if(houseBean != null){
             house.setHouseName(houseBean.getHouseName());
             house.setHouseAddress(houseBean.getHouseAddress());
+            house.setImg(houseBean.getImg());
         }
         return house;
     }
@@ -212,7 +291,44 @@ public class TravelService extends BaseService{
         if(null != resBean){
             res.setResName(resBean.getResName());
             res.setResAddress(resBean.getResAddress());
+            res.setImg(resBean.getImg());
         }
         return  res;
+    }
+
+    private Note filterNote(NoteBean noteBean, Note note){
+        if(null != noteBean){
+            note.setTitle(noteBean.getTitle());
+            note.setContent(noteBean.getContent());
+            note.setImg(noteBean.getImg());
+        }
+        return note;
+    }
+
+
+    /**
+     * 更新具体行程完成度信息
+     */
+    @Transactional
+    public int updataComplete(int id , int type){
+        //1.更新消息状态
+        int  result = -1;
+        switch (type){
+            case ModelContants.HOUSE:
+                result = travelDao.updateHouseComplete(id, ModelContants.COMPLETE);
+                break;
+            case ModelContants.TRAFFIC:
+                result = travelDao.updateTrafficComplete(id, ModelContants.COMPLETE);
+                break;
+            case ModelContants.RES:
+                result = travelDao.updateResComplete(id, ModelContants.COMPLETE);
+                break;
+            case ModelContants.PLACE:
+                result = travelDao.updatePlaceComplete(id, ModelContants.COMPLETE);
+                break;
+            default:
+                break;
+        }
+        return  result;
     }
 }

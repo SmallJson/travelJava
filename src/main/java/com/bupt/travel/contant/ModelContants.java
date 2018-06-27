@@ -33,8 +33,26 @@ public class ModelContants {
         return map.get(type);
     }
 
-/*    public static final String default_header ="http://10.108.245.188:8080/default_header.jpeg";*/
-/*    public static final String HOST_URL = "http://10.108.245.188:8080/travel/";*/
-    public static final String default_header ="http://123.206.50.85:8080/default_header.jpeg";
-    public static final String HOST_URL = "http://10.108.245.188:8080/";
+/* public static final String default_header ="http://10.108.245.188:8080/default_header.jpeg";
+    public static final String HOST_URL = "http://10.108.245.188:8080/";*/
+ public static final String HOST_URL = "http://123.206.50.85:8080/travel/";
+   public static final String default_header ="http://123.206.50.85:8080/travel/default_header.jpeg";
+
+
+    /**
+     * 行程相关的常量信息
+     */
+    //行程完成
+    public static final int COMPLETE = 1;
+    //行程未完成
+    public static final int UNCOMPLETE = 2;
+
+
+    /**
+     * 细节行程对应的类别
+     */
+    public static final int HOUSE = 1;
+    public static final int TRAFFIC = 2;
+    public static final int PLACE = 3;
+    public static final int RES = 4;
 }

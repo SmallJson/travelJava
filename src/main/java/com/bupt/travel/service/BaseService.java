@@ -22,6 +22,6 @@ public class BaseService {
     public Map<String, String> urlMap = new HashMap<>();
 
     public BaseService(){
-        urlMap.put("token", "https://a1.easemob.com/1148180614146538/travel/token");
+        urlMap.put("token", "http://a1.easemob.com/1148180614146538/travel/token");
     }
 }

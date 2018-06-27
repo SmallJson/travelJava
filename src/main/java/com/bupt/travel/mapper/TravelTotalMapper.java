@@ -1,6 +1,7 @@
 package com.bupt.travel.mapper;
 
 import com.bupt.travel.model.TravelTotal;
+import com.bupt.travel.model.requestBean.TravelTotalBean;
 import org.apache.ibatis.annotations.*;
 
 import java.util.ArrayList;
@@ -53,6 +54,20 @@ public interface  TravelTotalMapper {
             @Result(property = "travelDay", column = "travel_day"),
             @Result(property = "id", column = "id")
     })
-    public List<TravelTotal> selectXingchengIdByFromUid(Integer fromUid, Integer toId, Integer type, Integer readType );
+    public List<TravelTotal> selectTravelByFromUid(Integer fromUid, Integer toId, Integer type, Integer readType );
 
+    @Select("select * from travel_total where id =#{travelId}")
+    @Results({
+            @Result(property = "fromUid", column = "from_uid"),
+            @Result(property = "toUid", column = "to_uid"),
+            @Result(property = "readType", column = "read_type"),
+            @Result(property = "creatTime",column = "creat_time"),
+            @Result(property = "type",column = "type"),
+            @Result(property = "travelName",column = "travel_name"),
+            @Result(property = "startTime", column = "start_time"),
+            @Result(property = "startPlace", column = "start_place"),
+            @Result(property = "travelDay", column = "travel_day"),
+            @Result(property = "id", column = "id")
+    })
+    public TravelTotal selectTravelByXingchengId(Integer travelId);
 }

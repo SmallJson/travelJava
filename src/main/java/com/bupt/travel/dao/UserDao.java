@@ -50,4 +50,12 @@ public class UserDao {
     public UserInfo selecyUserInfoByUid(Integer uid){
         return infoMapper.selectUserInfoByUid(uid);
     }
+
+    public int selectIdByPhone(String phone){
+        return  userMapper.selectIdByPhone(phone);
+    }
+
+    public int updateUserInfo(UserInfo info){
+        return  infoMapper.updateInfo(info);
+    }
 }
